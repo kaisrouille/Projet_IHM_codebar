@@ -5,7 +5,8 @@
 #include <cstdio>
 
 ThreadLvgl threadLvgl(30);
-BufferedSerial codebar(D1, D0, 9600);
+BufferedSerial codebar(D1, D0, 9600); // initialise la communication UART
+// partie initilisation de mes objets Lvgl
 lv_obj_t *btn = lv_btn_create(lv_scr_act());
 lv_obj_t *btn2 = lv_btn_create(lv_scr_act());
 lv_obj_t *btn3 = lv_btn_create(lv_scr_act());
@@ -21,25 +22,25 @@ lv_obj_t *labe5=lv_label_create(obj1);
 lv_obj_t *labe6=lv_label_create(btn3);
 lv_obj_t *labe7;
 
-
- // Déplacer la déclaration ici
-const char *ficheproduit[50] = {"Banane", "coca", "pattes", "pesto", "vin blanc", "imprimante","champagne","brownie"};
+// déclaration des outils neccesaire a la lecture de code barre
+const char *ficheproduit[50] = {"Banane", "coca", "pattes", "pesto", "vin blanc", "imprimante","champagne","brownie"}; // nom des produits
 string chaine;
-string produit[50] = {"14810", "1805281", "936283", "921454", "323468", "188647", "071757", "545505","572410","540620"};
-int prix [50]={2,4,6,8,14,315,90,5};
-int total;
+string produit[50] = {"14810", "1805281", "936283", "921454", "323468", "188647", "071757", "545505","572410","540620"};// code barre utilisé pour cette ihm
+int prix [50]={2,4,6,8,14,315,90,5}; // prix de chaque article
+int total; // prix total
 string cb_caisse = "1212";
 std::string donnees_scannees;
 char addition[30];
 char addition2[30];
 int paiement;
 
-static void btn_event_cb(lv_event_t *e)
+static void btn_event_cb(lv_event_t *e) // evenement déclenché par le 1er bouton
 {
     LV_LOG_USER("clicked");
 
     lv_obj_t *btn = lv_event_get_target(e);
-    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN); // rend invisible le bouton pressé
+ // rend visible tout les objets
     lv_obj_clear_flag(obj2, LV_OBJ_FLAG_HIDDEN);
     lv_obj_clear_flag(img1, LV_OBJ_FLAG_HIDDEN);
     lv_obj_clear_flag(btn2, LV_OBJ_FLAG_HIDDEN);
@@ -47,23 +48,26 @@ static void btn_event_cb(lv_event_t *e)
 
 
 }
-static void btn_event_cb2(lv_event_t *e)
+static void btn_event_cb2(lv_event_t *e) // evenement déclenché par le 2eme bouton
 {
     LV_LOG_USER("clicked");
 
-    lv_obj_t *btn2 = lv_event_get_target(e);
+    lv_obj_t *btn2 = lv_event_get_target(e); // cible l'objet Btn2
+    //rend les objet invisible
     lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(obj2, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(img1, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(btn2, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(btn3, LV_OBJ_FLAG_HIDDEN);
+// rend obj1 visible
     lv_obj_clear_flag(obj1, LV_OBJ_FLAG_HIDDEN);
-
+// crée un objet et initialise ses paramètres
     lv_obj_set_size(obj1, 400, 250);
     lv_obj_set_style_bg_color(obj1, lv_palette_main(LV_PALETTE_GREY), LV_PART_MAIN);
     lv_label_set_text(labe5,addition2);
     lv_obj_center(obj1);
     lv_obj_center(labe5);
+ // variable crée pour savoir si on se situe dans le Btn_event_cb2
     paiement=0;
 }
 static void btn_event_cb3(lv_event_t *e)
@@ -71,24 +75,27 @@ static void btn_event_cb3(lv_event_t *e)
     LV_LOG_USER("clicked");
 
     lv_obj_t *btn3 = lv_event_get_target(e);
+    //rend les objet invisible
     lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(obj2, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(img1, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(btn2, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(btn3, LV_OBJ_FLAG_HIDDEN);
-
+// rend un objet visible
     lv_obj_clear_flag(obj3, LV_OBJ_FLAG_HIDDEN);
-
+// crée un objet et initialise ses paramètres
     lv_obj_set_size(obj3, 400, 250);
     lv_obj_set_style_bg_color(obj3, lv_palette_main(LV_PALETTE_GREY), LV_PART_MAIN);
     lv_label_set_text(labe7,"appeler la caissière");
     lv_obj_center(obj3);
     lv_obj_center(labe7);
+  // variable crée pour savoir si on se situe dans le Btn_event_cb3
     paiement=1;
 
     
    
 }
+// fonction servant a parametrer mes objets
 void bouton(void)
 {
     lv_obj_set_size(btn, 400, 250);
@@ -165,35 +172,35 @@ int main()
 
     while (1)
     {
-        if (codebar.readable())
+        if (codebar.readable()) // conditions permettant de savoir si on a recu quelque chose de lisible sur la liaison uart
         {
             threadLvgl.lock();
             char data;
-            codebar.read(&data, 1);
-            printf("%c", data);
-            if (data == '\r')
+            codebar.read(&data, 1);// fonction permettant de lire les valeurs envoyé sur la liaison UART
+            printf("%c", data);// ecris les valeurs recu a la suite
+            if (data == '\r')// detecte le dernier caractère du code barre 
             {   
-                printf("\n");
+                printf("\n");// ecris un saut de ligne pour que la chaine puisse être ecrite dans le terminale
                 printf("%s",chaine);
                 for (i = 0; i < 50; i++)
                 {
                     if (chaine == produit[i])
                     { printf("cc");
                         lv_label_set_text(labe2, ficheproduit[i]); // Mettre à jour le texte du label
-                        total=total+prix[i];
-                        snprintf(addition,sizeof(addition),"total: %d e",total);
+                        total=total+prix[i];// addition de toute les sommes lu pour crée le total
+                        snprintf(addition,sizeof(addition),"total: %d e",total); // permet d'ecrire dans une variable pour l'afficher sur lvgl
                         snprintf(addition2,sizeof(addition2),"paie vite  %d e",total);
 
                         lv_label_set_text(labe3,addition); // Mettre à jour le texte du label
                         
                     }
-                    else if (chaine == produit[8] && paiement==0)
+                    else if (chaine == produit[8] && paiement==0) // condition pour rentre dans le bouton de paiement accepter
                     {
                         lv_label_set_text(labe5,"paiement accepter ");
                             lv_obj_set_style_bg_color(obj1, lv_palette_main(LV_PALETTE_GREEN), LV_PART_MAIN);
 
                     }
-                    else if(chaine != produit[8] && paiement==0)
+                    else if(chaine != produit[8] && paiement==0)// condition pour rentrer dans le cas paiement refusé
                     {lv_label_set_text(labe5,"paiement refuser ");
                     
                     lv_obj_set_style_bg_color(obj1, lv_palette_main(LV_PALETTE_RED), LV_PART_MAIN);
@@ -201,7 +208,7 @@ int main()
 
 
                     }
-                    else if (chaine == produit[9] && paiement==1)
+                    else if (chaine == produit[9] && paiement==1) // condition de réinitialisation 
                     {
                        
                     }
@@ -213,7 +220,7 @@ int main()
             }
             else
             {
-                chaine = chaine + data;
+                chaine = chaine + data;// permet de stocker les codes barres dans une variable
             }
             threadLvgl.unlock();
         }
